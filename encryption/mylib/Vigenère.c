@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define MN (10000)
+#define MN (1000000)
 #define LOWER (0)
 #define UPPER (1)
 #define OTHER (2)

@@ -31,8 +31,7 @@ LB = tk.Listbox(FB, width=50)
 LB.grid(row=1, padx=20)
 
 def clear():
-    global ciphertext
-    ciphertext = ""
+    ciphertext.set("")
     LB.delete(0, LB.size())
 
 

@@ -1,12 +1,8 @@
-import string
 import tkinter as tk
 import ctypes as ct
+import base64
 
-for i in "测试字符串":
-    print(ord(i))
-
-'''
-alg = "Vigenère"
+alg = "AES"
 ALG = ct.CDLL(".\\mylib\\" + alg + ".dll")
 
 top = tk.Tk()
@@ -43,19 +39,30 @@ def clear():
 
 def encrypt():
     global ct
-    PT = EPT.get()
-    CT = ct.c_wchar_p(PT)
-    K = EK.get()
-    ALG.encrypt(CT, len(PT), K, len(K))
-    ciphertext.set(CT.value)
+    PT = bytes(EPT.get(), encoding="utf8")
+    K = bytes(EK.get(), encoding="utf8")
+    K = ct.create_string_buffer(K, 176)
+    ALG.ke(K)
+    CT = b''
+    for i in range(0, len(PT), 16):
+        t = ct.create_string_buffer(PT[i:i+16], 16)
+        ALG.encrypt(t, K)
+        CT = CT + base64.b16encode(t.raw)
+    ciphertext.set(CT)
 
 def decrypt():
     global ct
     CT = ECT.get()
-    PT = ct.c_wchar_p(CT)
-    K = EK.get()
-    ALG.decrypt(PT, len(CT), K, len(K))
-    plaintext.set(PT.value)
+    CT = base64.b16decode(CT)
+    K = bytes(EK.get(), encoding="utf8")
+    K = ct.create_string_buffer(K, 176)
+    ALG.ke(K)
+    PT = b''
+    for i in range(0, len(CT), 16):
+        t = ct.create_string_buffer(CT[i:i+16], 16)
+        ALG.decrypt(t, K)
+        PT = PT + t.value
+    plaintext.set(str(PT, encoding="utf8"))
 
 BC = tk.Button(FB, text="清空", command=clear)
 BC.grid(row=2, column=0, padx=40)
@@ -66,4 +73,3 @@ BE.grid(row=2, column=2, padx=20)
 
 top.mainloop()
 
-'''

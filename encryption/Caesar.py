@@ -32,9 +32,9 @@ EK = tk.Entry(FE, textvariable=key)
 EK.grid(row=2, column=1)
 
 def clear():
-    global plaintext, ciphertext
-    plaintext = ""
-    ciphertext = ""
+    plaintext.set("")
+    ciphertext.set("")
+    key.set("")
 
 def encrypt():
     global ct

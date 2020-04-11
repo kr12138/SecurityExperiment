@@ -5,7 +5,7 @@ string s,t;
 
 int main(){
 	while(cin>>s)
-		t+=s+",";
+		t+=",0x"+s;
 	cout<<t;
 	return 0;
 }

@@ -17,10 +17,10 @@ void sr(uint8 x[][4])
 {
 #define swap(x, y) do{uint8 t=(x); (x)=(y); (y)=t;} while(0) 
 #define lshift(a, b, c, d) do{uint8 t=(a); (a)=(b); (b)=(c); (c)=(d); (d)=t;} while(0)
-	lshift(x[1][0], x[1][1], x[1][2], x[1][3]);
-	swap(x[2][0], x[2][2]);
-	swap(x[2][1], x[2][3]);
-	lshift(x[3][3], x[3][2], x[3][1], x[3][0]);
+	lshift(x[0][1], x[1][1], x[2][1], x[3][1]);
+	swap(x[0][2], x[2][2]);
+	swap(x[1][2], x[3][2]);
+	lshift(x[3][3], x[2][3], x[1][3], x[0][3]);
 }
 
 const uint8 a[][4] =
@@ -39,7 +39,7 @@ void mc(uint8 x[][4])
 		for(uint8 i=0; i<4; ++i)
 			for(uint8 k=0; k<4; ++k)
 			{
-				uint8 t = x[k][j];
+				uint8 t = x[j][k];
 				if(a[i][k] & 1)
 					rt[i][j] ^= t;
 				if(a[i][k] & 2)
@@ -51,7 +51,7 @@ void mc(uint8 x[][4])
 			}
 	for(uint8 i=0; i<4; ++i)
 		for(uint8 j=0; j<4; ++j)
-			x[i][j] = rt[i][j];
+			x[i][j] = rt[j][i];
 }
 
 void ark(uint8 x[][4], uint8 **k)
@@ -59,12 +59,12 @@ void ark(uint8 x[][4], uint8 **k)
 	uint8 (*p)[4] = (uint8(*)[])(*k);
 	for(uint8 i=0; i<4; ++i)
 		for(uint8 j=0; j<4; ++j)
-			x[i][j] ^= p[j][i];
+			x[i][j] ^= p[i][j];
 	(*k) += 16;
 }
 
 #define NK (4)
-const int RC[] = {0,1,2,4,8,0x10,0x20,0x30,0x40,0x80,0x1B,0x36};
+const int RC[] = {0,1,2,4,8,0x10,0x20,0x40,0x80,0x1B,0x36};
 
 void ke(uint8 k[])
 {
@@ -79,20 +79,20 @@ void ke(uint8 k[])
 		}
 		else
 		{
-			*p++ = *l++;
-			*p++ = *l++;
-			*p++ = *l++;
-			*p = *l++; p -= 3;
+			*p++ = *r++;
+			*p++ = *r++;
+			*p++ = *r++;
+			*p = *r++; p -= 3;
 			lshift(*p, p[1], p[2], p[3]);
 			*p = SB[*p]; ++p;
 			*p = SB[*p]; ++p;
 			*p = SB[*p]; ++p;
 			*p = SB[*p]; p-=3;
 			*p ^= RC[i>>2];
-			*p++ ^= *r++;
-			*p++ ^= *r++;
-			*p++ ^= *r++;
-			*p++ ^= *r++;
+			*p++ ^= *l++;
+			*p++ ^= *l++;
+			*p++ ^= *l++;
+			*p++ ^= *l++;
 		}
 }
 
@@ -125,10 +125,10 @@ void isb(uint8 x[][4])
 
 void isr(uint8 x[][4])
 {
-	lshift(x[1][3], x[1][2], x[1][1], x[1][0]);
-	swap(x[2][0], x[2][2]);
-	swap(x[2][1], x[2][3]);
-	lshift(x[3][0], x[3][1], x[3][2], x[3][3]);
+	lshift(x[3][1], x[2][1], x[1][1], x[0][1]);
+	swap(x[0][2], x[2][2]);
+	swap(x[1][2], x[3][2]);
+	lshift(x[0][3], x[1][3], x[2][3], x[3][3]);
 }
 
 uint8 mul(uint8 x, uint8 y)
@@ -159,10 +159,10 @@ void imc(uint8 x[][4])
 	for(uint8 j=0; j<4; ++j)
 		for(uint8 i=0; i<4; ++i)
 			for(uint8 k=0; k<4; ++k)
-				rt[i][j] ^= mul(ia[i][k], x[k][j]);
+				rt[i][j] ^= mul(ia[i][k], x[j][k]);
 	for(uint8 i=0; i<4; ++i)
 		for(uint8 j=0; j<4; ++j)
-			x[i][j] = rt[i][j];
+			x[i][j] = rt[j][i];
 }
 
 void iark(uint8 x[][4], uint8 **k)
@@ -170,7 +170,7 @@ void iark(uint8 x[][4], uint8 **k)
 	uint8 (*p)[4] = (uint8(*)[])(*k);
 	for(uint8 i=0; i<4; ++i)
 		for(uint8 j=0; j<4; ++j)
-			x[i][j] ^= p[j][i];
+			x[i][j] ^= p[i][j];
 	(*k) -= 16;
 }
 
@@ -192,10 +192,11 @@ void decrypt(uint8 s[16], uint8 k[])
 
 //uint8 k[30]={0xa0,0x88,0x23,0x2a,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6};
 
+unsigned char s[17] = "abcdefghijklmnop";
+unsigned char k[176] = "abcdefghijklmnop";
 int main(){
-	unsigned char s[17] = "abcdefghijklmnop";
-	unsigned char k[176] = "abcdefghijklmnop";
-	encrypt(s,k);
+	ke(k);
+	encrypt(s, k);
 	for(int i=0; i<16; ++i)
 		printf("\\x%02x",s[i]); puts("");
 	for(int i=0; i<80; ++i)
@@ -206,8 +207,8 @@ int main(){
 	for(int i=0; i<16; ++i)
 		printf("%2x ",s[i]); puts("");
 //	puts(k);
-	for(int i=0; i<80; ++i)
-		printf("%2x ",k[i]); puts("");
+	for(int i=0; i<176; i+=4)
+		printf("%02x%02x%02x%02x ",k[i],k[i+1],k[i+2],k[i+3]); puts("");
 	puts("dec ok");
 	
 //test case: https://blog.csdn.net/qq_31962349/article/details/80008174

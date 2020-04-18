@@ -1,35 +1,79 @@
 package GUI;
 
+import alg.MyInt;
+
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Random;
 
 public class GUI {
     private JPanel panel1;
-    private JTextField plainText;
-    private JTextField key;
-    private JTextField cipherText;
+    private JTextArea plainText;
+    private JTextArea cipherText;
     private JButton clearButton;
     private JButton encryptButton;
     private JButton decryptButton;
+    private JTextField privateKeyP;
+    private JTextField privateKeyQ;
+    private JTextField publicKeyN;
+    private JTextField publicKeyE;
+    private JTextField privateKeyD;
+    private JButton randomPButton;
+    private JButton randomQButton;
+    private JButton randomEButton;
 
     public GUI() {
-        clearButton.addActionListener(e -> {
+        clearButton.addActionListener(E -> {
             plainText.setText("");
-            key.setText("");
             cipherText.setText("");
+            privateKeyP.setText("");
+            privateKeyQ.setText("");
+            publicKeyN.setText("");
+            publicKeyE.setText("");
+            privateKeyD.setText("");
         });
-        encryptButton.addActionListener(e -> {
-            String p = plainText.getText();
-            String k = key.getText();
-            String c = p + k;
-            cipherText.setText(c);
+        randomPButton.addActionListener(E -> {
+            int bitLen = 100 + new Random().nextInt()%100;
+            MyInt p = MyInt.probablePrime(bitLen, new Random());
+            privateKeyP.setText(p.toString());
         });
-        decryptButton.addActionListener(e -> {
-            String c = cipherText.getText();
-            String k = key.getText();
-            String p = c + k;
-            plainText.setText(p);
+        randomQButton.addActionListener(E -> {
+            int bitLen = 100 + new Random().nextInt()%100;
+            MyInt q = MyInt.probablePrime(bitLen, new Random());
+            privateKeyQ.setText(q.toString());
+        });
+        randomEButton.addActionListener(E -> {
+            MyInt p = new MyInt(privateKeyP.getText());
+            MyInt q = new MyInt(privateKeyQ.getText());
+            MyInt phiN = p.subtr(1).mult(q.subtr(1));
+            MyInt e = new MyInt();
+            while (!e.gcd(phiN).equalsTo(1))
+                e = MyInt.rand(phiN.bitLength(), phiN);
+            publicKeyE.setText(e.toString());
+        });
+        encryptButton.addActionListener(E -> {
+            MyInt p = new MyInt(privateKeyP.getText());
+            MyInt q = new MyInt(privateKeyQ.getText());
+            MyInt e = new MyInt(publicKeyE.getText());
+            MyInt n = p.mult(q);
+            publicKeyN.setText(n.toString());
+//            MyInt phiN = p.subtr(1).mult(q.subtr(1));
+//            MyInt d = e.inv(phiN);
+//            privateKeyD.setText(d.toString());
+            MyInt pt = new MyInt(plainText.getText());
+            MyInt ct = pt.pow(e, n);
+            cipherText.setText(ct.toString());
+        });
+        decryptButton.addActionListener(E -> {
+            MyInt p = new MyInt(privateKeyP.getText());
+            MyInt q = new MyInt(privateKeyQ.getText());
+            MyInt e = new MyInt(publicKeyE.getText());
+            MyInt n = p.mult(q);
+            MyInt phiN = p.subtr(1).mult(q.subtr(1));
+            MyInt d = e.inv(phiN);
+            privateKeyD.setText(d.toString());
+            MyInt ct = new MyInt(cipherText.getText());
+            MyInt pt = ct.pow(d, n);
+            plainText.setText(pt.toString());
         });
     }
 
